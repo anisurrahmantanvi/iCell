@@ -35,4 +35,10 @@ jobs:
           version: latest
       - name: Deploy icell-send-push (called by database triggers, checked by a shared secret)
         if: steps.tok.outputs.have == 'yes'
-        run: supabase functions deploy icell-send-push --no-verify-jwt --project-ref "$PROJECT_REF"
+        run: |
+          if ! supabase functions deploy icell-send-push --no-verify-jwt --project-ref "$PROJECT_REF" > deploy.log 2>&1; then
+            msg=$(tail -25 deploy.log | sed -E 's/sbp_[A-Za-z0-9_]+/[token]/g' | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')
+            echo "::error title=Deploy failed::$msg"
+            exit 1
+          fi
+          echo "Deployed icell-send-push"
