@@ -50,8 +50,8 @@ language sql stable security invoker set search_path = public as $$
     and p.id <> auth.uid()
     and not public.is_blocked_between(auth.uid(), p.id)
     and (
-      p.username ilike '%' || replace(replace(replace(trim(p_query), '\', '\\'), '%', '\%'), '_', '\_') || '%'
-      or p.display_name ilike '%' || replace(replace(replace(trim(p_query), '\', '\\'), '%', '\%'), '_', '\_') || '%'
+      strpos(lower(coalesce(p.username, '')), lower(trim(p_query))) > 0
+      or strpos(lower(coalesce(p.display_name, '')), lower(trim(p_query))) > 0
     )
   order by (lower(p.username) = lower(trim(p_query))) desc, p.username
   limit 20;
