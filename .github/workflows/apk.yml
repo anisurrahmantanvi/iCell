@@ -1,14 +1,22 @@
 name: Android APK
-# Run manually: Actions > Android APK > Run workflow. The two values are PUBLIC (URL + publishable key); never paste a secret key.
+# Builds on every push to main, and on demand (Actions > Android APK > Run workflow).
+# The URL and the PUBLISHABLE key (public by design, same as iConnecto) come from, in order:
+#   the manual inputs, then repository Variables VITE_SUPABASE_URL / VITE_SUPABASE_PUBLISHABLE_KEY, then the defaults below.
+# Never put a secret / service-role key here.
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
     inputs:
       supabase_url:
-        description: Supabase project URL (same project as iConnecto)
-        required: true
+        description: Supabase project URL (optional, overrides the default)
+        required: false
       publishable_key:
-        description: Supabase publishable key (never a secret / service-role key)
-        required: true
+        description: Supabase publishable key (optional; never a secret / service-role key)
+        required: false
+concurrency:
+  group: apk
+  cancel-in-progress: true
 permissions:
   contents: write
 jobs:
@@ -26,8 +34,8 @@ jobs:
       - run: npm install --no-audit --no-fund
       - run: npm run build
         env:
-          VITE_SUPABASE_URL: ${{ inputs.supabase_url }}
-          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ inputs.publishable_key }}
+          VITE_SUPABASE_URL: ${{ inputs.supabase_url || vars.VITE_SUPABASE_URL || 'https://hcfehacsfirzwjqqcabb.supabase.co' }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ inputs.publishable_key || vars.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_sSm3MgXAmUpwFaPdwgPvUA_TmTFjstu' }}
       - name: Add Capacitor (build-time only, package.json untouched)
         run: npm install --no-save --no-audit --no-fund @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6
       - name: Create the Android project (files are bundled in the APK)

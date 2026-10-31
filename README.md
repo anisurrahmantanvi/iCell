@@ -15,6 +15,11 @@ Stack: React + TypeScript + Vite, Supabase (publishable key only), Capacitor 6 f
 - Unfinished features show "Coming soon" and are switched on one at a time.
 - iCell has its own design; it does not copy another app's UI.
 
+## Build
+
+- Every push to `main` runs **Build check** (type check + build) and **Android APK** (debug APK, published on the `built-apk` branch and as an Actions artifact).
+- The APK build reads the repository Variables `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` when they exist, otherwise the public defaults in `.github/workflows/apk.yml` (same project and publishable key as iConnecto). Only publishable values; never a secret key.
+
 ## Roadmap
 
 | # | Step | State |
