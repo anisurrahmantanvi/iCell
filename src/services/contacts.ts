@@ -56,3 +56,9 @@ export async function removeContact(contactId: string): Promise<void> {
   const { error } = await supabase.from('icell_contacts').delete().eq('contact_id', contactId)
   if (error) throw new Error(error.message)
 }
+
+export async function getPerson(id: string): Promise<Person | null> {
+  const { data, error } = await supabase.from('profiles').select(PERSON_COLS).eq('id', id).maybeSingle()
+  if (error) throw new Error(error.message)
+  return (data as Person | null) ?? null
+}

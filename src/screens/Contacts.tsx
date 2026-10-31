@@ -1,18 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { Face } from '@/components/Face'
 import { errorMessage } from '@/lib/supabase'
 import { addContact, listContacts, personName, removeContact, searchPeople, setFavorite, type Contact, type Person } from '@/services/contacts'
 
-function Face({ person }: { person: Person | null }) {
-  const [broken, setBroken] = useState(false)
-  const initial = personName(person).trim().charAt(0).toUpperCase() || '?'
-  return person?.avatar_url && !broken ? (
-    <img className="face" src={person.avatar_url} alt="" onError={() => setBroken(true)} />
-  ) : (
-    <span className="face face--blank" aria-hidden>{initial}</span>
-  )
-}
-
-export function Contacts() {
+export function Contacts({ onCall }: { onCall: (p: Person) => void }) {
   const [contacts, setContacts] = useState<Contact[] | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [query, setQuery] = useState('')
@@ -137,7 +128,7 @@ export function Contacts() {
               >
                 {c.is_favorite ? '★' : '☆'}
               </button>
-              <button type="button" className="btn btn--small" disabled title="Calling is coming soon">Call · soon</button>
+              <button type="button" className="btn btn--small btn--primary" disabled={!c.person} onClick={() => c.person && onCall(c.person)}>Call</button>
               <button type="button" className="icon" aria-label="Remove contact" onClick={() => void run(() => removeContact(c.contact_id))}>✕</button>
             </li>
           ))}

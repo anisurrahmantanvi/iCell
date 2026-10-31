@@ -68,3 +68,17 @@ button, input { font: inherit; color: inherit; }
 .btn--small { min-height: 40px; padding: 8px 12px; font-size: 14px; }
 .icon { background: none; border: 0; min-width: 40px; min-height: 40px; font-size: 20px; color: var(--muted); cursor: pointer; }
 .icon[aria-pressed='true'] { color: var(--accent); }
+
+.face--large { width: 112px; height: 112px; font-size: 44px; }
+.notice--soft { border-color: var(--line); }
+.call, .incoming { position: fixed; inset: 0; z-index: 50; display: grid; grid-template-rows: 1fr auto auto; justify-items: center; gap: 16px; padding: calc(var(--sat) + 48px) 24px calc(var(--sab) + 40px); background: radial-gradient(120% 80% at 50% 0%, #17332b 0%, var(--bg) 70%); color: var(--text); text-align: center; }
+.call__who { display: grid; gap: 10px; justify-items: center; align-content: center; }
+.call__who h1 { font-size: 28px; }
+.call__status { color: var(--muted); font-size: 18px; font-variant-numeric: tabular-nums; }
+.call__notes { max-width: 340px; display: grid; gap: 8px; text-align: left; }
+.call__actions { display: flex; gap: 28px; align-items: center; justify-content: center; }
+.round { width: 92px; height: 92px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--text); font-weight: 700; font-size: 15px; cursor: pointer; }
+.round[aria-pressed='true'] { background: var(--text); color: var(--bg); }
+.round--end { background: var(--danger); border-color: transparent; color: #fff; }
+.round--accept { background: var(--accent); border-color: transparent; color: var(--accent-ink); }
+.round:disabled { opacity: .5; }

@@ -25,3 +25,10 @@ export function errorMessage(err: unknown): string {
   if (l.includes('row-level security') || l.includes('permission denied')) return 'You do not have permission to do that.'
   return m || 'Something went wrong. Please try again.'
 }
+
+let channelSeq = 0
+/** Realtime channel names must be unique per subscription (React may subscribe, unsubscribe and re-subscribe). */
+export function channelName(base: string): string {
+  channelSeq += 1
+  return `${base}#${Date.now().toString(36)}${channelSeq.toString(36)}`
+}
