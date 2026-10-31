@@ -31,4 +31,6 @@ Stack: React + TypeScript + Vite, Supabase (publishable key only), Capacitor 6 f
 | 5 | Native incoming-call screen and ringtone (lock screen) | Coming soon |
 | 6 | Calls between iCell and iConnecto users | Coming soon |
 
+Hosting: GitHub Pages (workflow `pages.yml`) serves the web build and `download.html` (APK link). Needs Settings > Pages > Source = GitHub Actions once.
+
 See `docs/STATUS.md` for what has and has not been verified.
