@@ -71,7 +71,7 @@ public class CallMessagingService extends FirebaseMessagingService {
       ch.setDescription("Rings when someone calls you on iCell");
       ch.setSound(ring, new AudioAttributes.Builder()
           .setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
-          .setContentType(AudioAttributes.CONTENT_TYPE_SONIC)
+          .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
           .build());
       ch.enableVibration(true);
       ch.setVibrationPattern(new long[] {0, 400, 300, 400, 300, 400});
