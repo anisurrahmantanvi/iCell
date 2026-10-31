@@ -28,6 +28,7 @@ Stack: React + TypeScript + Vite, Supabase (publishable key only), Capacitor 6 f
 | 2 | Contacts (find by username, favourites) | written, needs `supabase/migrations/icell_0001_contacts.sql` run once; **not built or tested yet** |
 | 3a | iCell-to-iCell voice calls, app open, STUN only (own tables `icell_calls`, `icell_call_signals`; run `icell_0002_calls.sql`) | written, **built by CI only; not tested on phones** |
 | 3b | TURN relay credentials service (Cloudflare) | Coming soon |
+| 5 | Phone push + full-screen incoming call (rings when closed / locked): `icell_0003_push.sql`, function `icell-send-push`, native `mobile/*.java`, secrets `GOOGLE_SERVICES_JSON` + `SUPABASE_ACCESS_TOKEN` | written, **needs one-time setup (docs/PUSH_SETUP.md); not tested on a phone** |
 | 4 | Call history | Coming soon |
 | 5 | Native incoming-call screen and ringtone (lock screen) | Coming soon |
 | 6 | Calls between iCell and iConnecto users | Coming soon |

@@ -1,0 +1,5 @@
+# Minimal project file so `supabase functions deploy` works from this repo. No secrets here.
+project_id = "icell"
+
+[functions.icell-send-push]
+verify_jwt = false

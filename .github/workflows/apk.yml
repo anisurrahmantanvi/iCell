@@ -37,21 +37,49 @@ jobs:
           VITE_SUPABASE_URL: ${{ inputs.supabase_url || vars.VITE_SUPABASE_URL || 'https://hcfehacsfirzwjqqcabb.supabase.co' }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ inputs.publishable_key || vars.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_sSm3MgXAmUpwFaPdwgPvUA_TmTFjstu' }}
       - name: Add Capacitor (build-time only, package.json untouched)
-        run: npm install --no-save --no-audit --no-fund @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6
+        run: npm install --no-save --no-audit --no-fund @capacitor/cli@6 @capacitor/android@6
       - name: Create the Android project (files are bundled in the APK)
         run: |
           cat > capacitor.config.json <<'JSON'
           {"appId":"com.iconnecto.call","appName":"iCell","webDir":"dist","server":{"androidScheme":"https"}}
           JSON
           npx cap add android
+          # iCell's own native code: lock-screen incoming-call notification, over-lock-screen launch, small helper plugin
+          cp mobile/MainActivity.java mobile/CallMessagingService.java mobile/CallSetupPlugin.java android/app/src/main/java/com/iconnecto/call/
           python3 - <<'PY'
+          import re
           p='android/app/src/main/AndroidManifest.xml'
           s=open(p).read()
-          perms=''.join('<uses-permission android:name="android.permission.%s" />\n'%x for x in ['RECORD_AUDIO','MODIFY_AUDIO_SETTINGS'])
+          if 'xmlns:tools' not in s:
+              s=s.replace('<manifest ','<manifest xmlns:tools="http://schemas.android.com/tools" ',1)
+          perms=''.join('<uses-permission android:name="android.permission.%s" />\n'%x for x in ['RECORD_AUDIO','MODIFY_AUDIO_SETTINGS','POST_NOTIFICATIONS','USE_FULL_SCREEN_INTENT','VIBRATE','WAKE_LOCK'])
           s=s.replace('</manifest>',perms+'</manifest>')
+          # our service handles every push for this app, so the push plugin's own service is removed
+          svc='<service android:name="com.capacitorjs.plugins.pushnotifications.MessagingService" tools:node="remove" />\n<service android:name=".CallMessagingService" android:exported="false"><intent-filter><action android:name="com.google.firebase.MESSAGING_EVENT" /></intent-filter></service>\n'
+          s=s.replace('</application>',svc+'</application>')
           open(p,'w').write(s)
           PY
           npx cap sync android
+      - name: Firebase config (needed for phone push)
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          if [ -n "$GOOGLE_SERVICES_JSON" ]; then
+            printf '%s' "$GOOGLE_SERVICES_JSON" > android/app/google-services.json
+            echo "Firebase config added"
+          else
+            echo "::warning title=No Firebase config::Repository secret GOOGLE_SERVICES_JSON is missing, so this APK cannot receive call pushes when closed."
+          fi
+      - name: Make Firebase Messaging visible to iCell's own service
+        run: |
+          python3 - <<'PY'
+          p='android/app/build.gradle'
+          s=open(p).read()
+          dep="dependencies {\n    implementation platform('com.google.firebase:firebase-bom:33.1.2')\n    implementation 'com.google.firebase:firebase-messaging'\n"
+          assert 'dependencies {\n' in s
+          s=s.replace('dependencies {\n',dep,1)
+          open(p,'w').write(s)
+          PY
       - name: Build debug APK
         run: |
           cd android

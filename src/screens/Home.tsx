@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { errorMessage, supabase } from '@/lib/supabase'
-import { createCall } from '@/services/calls'
+import { disablePushForThisPhone, refreshPushIfAllowed } from '@/lib/push'
+import { createCall, setCallStatus } from '@/services/calls'
 import type { Person } from '@/services/contacts'
 import { ActiveCall } from './ActiveCall'
+import { CallAlerts } from './CallAlerts'
 import { ComingSoon } from './ComingSoon'
 import { Contacts } from './Contacts'
 import { IncomingCall } from './IncomingCall'
@@ -28,6 +30,7 @@ export function Home({ session }: { session: Session }) {
   const [meError, setMeError] = useState(false)
   const [activeCall, setActiveCall] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
+  const [pushedCallId, setPushedCallId] = useState<string | null>(null)
   const myId = session.user.id
 
   // Read-only: shows who is signed in, from the shared iConnecto profile.
@@ -47,6 +50,28 @@ export function Home({ session }: { session: Session }) {
       off = true
     }
   }, [myId])
+
+  // If this phone already allowed call alerts, keep its token fresh. Never asks anything.
+  useEffect(() => {
+    void refreshPushIfAllowed()
+  }, [myId])
+
+  // The Android app passes a tapped call notification (ring / answer / decline) to the page. Each hand-off has a number so it runs once.
+  useEffect(() => {
+    let lastN = 0
+    const read = () => {
+      const w = window as unknown as { __icellPendingCall?: { callId: string; action: string; n: number } | null }
+      const p = w.__icellPendingCall
+      if (!p || p.n === lastN) return
+      lastN = p.n
+      if (p.action === 'decline') void setCallStatus(p.callId, 'declined').catch(() => undefined)
+      else if (p.action === 'answer') setActiveCall(p.callId)
+      else setPushedCallId(p.callId)
+    }
+    read()
+    window.addEventListener('icell-call', read)
+    return () => window.removeEventListener('icell-call', read)
+  }, [])
 
   const startCall = useCallback(async (person: Person) => {
     setNotice(null)
@@ -74,9 +99,9 @@ export function Home({ session }: { session: Session }) {
           <div className="settings">
             <div className="card">
               <p className="card__value">Voice calls</p>
-              <p className="card__small">Open Contacts and tap Call next to a person who also uses iCell. Calls work while iCell is open on both phones.</p>
+              <p className="card__small">Open Contacts and tap Call next to a person who also uses iCell. To ring when iCell is closed or the phone is locked, turn on call alerts below.</p>
             </div>
-            <ComingSoon title="Ringing when iCell is closed" note="Lock-screen incoming calls and ringtone choice." />
+            <CallAlerts />
             <ComingSoon title="Calls to iConnecto users" note="Calling people who only use iConnecto." />
           </div>
         )}
@@ -89,8 +114,17 @@ export function Home({ session }: { session: Session }) {
               <p className="card__value">{name}</p>
               <p className="card__small">{session.user.email}</p>
             </div>
+            <CallAlerts />
             <ComingSoon title="Ringtone and call settings" note="Ringtone choice, Do not disturb and more." />
-            <button type="button" className="btn" onClick={() => void supabase.auth.signOut()}>Sign out</button>
+            <button
+              type="button"
+              className="btn"
+              onClick={() => {
+                void disablePushForThisPhone().finally(() => void supabase.auth.signOut())
+              }}
+            >
+              Sign out
+            </button>
           </div>
         )}
       </main>
@@ -103,7 +137,7 @@ export function Home({ session }: { session: Session }) {
         ))}
       </nav>
 
-      <IncomingCall myId={myId} busy={activeCall !== null} onAnswer={setActiveCall} />
+      <IncomingCall myId={myId} busy={activeCall !== null} pushedCallId={pushedCallId} onAnswer={setActiveCall} />
       {activeCall ? <ActiveCall callId={activeCall} myId={myId} onClose={() => setActiveCall(null)} /> : null}
     </div>
   )
