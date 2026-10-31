@@ -1,0 +1,65 @@
+name: Android APK
+# Run manually: Actions > Android APK > Run workflow. The two values are PUBLIC (URL + publishable key); never paste a secret key.
+on:
+  workflow_dispatch:
+    inputs:
+      supabase_url:
+        description: Supabase project URL (same project as iConnecto)
+        required: true
+      publishable_key:
+        description: Supabase publishable key (never a secret / service-role key)
+        required: true
+permissions:
+  contents: write
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - run: npm install --no-audit --no-fund
+      - run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ inputs.supabase_url }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ inputs.publishable_key }}
+      - name: Add Capacitor (build-time only, package.json untouched)
+        run: npm install --no-save --no-audit --no-fund @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6
+      - name: Create the Android project (files are bundled in the APK)
+        run: |
+          cat > capacitor.config.json <<'JSON'
+          {"appId":"com.iconnecto.call","appName":"iCell","webDir":"dist","server":{"androidScheme":"https"}}
+          JSON
+          npx cap add android
+          python3 - <<'PY'
+          p='android/app/src/main/AndroidManifest.xml'
+          s=open(p).read()
+          perms=''.join('<uses-permission android:name="android.permission.%s" />\n'%x for x in ['RECORD_AUDIO','MODIFY_AUDIO_SETTINGS'])
+          s=s.replace('</manifest>',perms+'</manifest>')
+          open(p,'w').write(s)
+          PY
+          npx cap sync android
+      - name: Build debug APK
+        run: |
+          cd android
+          if ! ./gradlew assembleDebug --no-daemon --stacktrace > ../gradle.log 2>&1; then
+            msg=$(grep -E "error:|What went wrong|Caused by|FAILURE|Could not|not found|Unsupported|Execution failed" -A3 ../gradle.log | head -40 | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')
+            echo "::error title=Gradle failed::$msg"
+            exit 1
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: icell-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+      - name: Publish the APK on a separate branch
+        run: |
+          mkdir /tmp/pub && cp android/app/build/outputs/apk/debug/app-debug.apk /tmp/pub/iCell.apk && cd /tmp/pub
+          git init -q -b built-apk
+          git config user.name github-actions && git config user.email actions@github.com
+          git add . && git commit -q -m "APK"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" built-apk
