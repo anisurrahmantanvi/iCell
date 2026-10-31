@@ -52,3 +52,19 @@ button, input { font: inherit; color: inherit; }
 .auth__form label { display: grid; gap: 6px; font-size: 14px; color: var(--muted); }
 .auth__form input { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px; min-height: 48px; color: var(--text); }
 .auth__error { color: var(--danger); font-size: 14px; }
+
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.contacts { display: grid; gap: 16px; }
+.search input { width: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px; min-height: 48px; color: var(--text); }
+.h2 { font-size: 13px; letter-spacing: .6px; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; }
+.muted { color: var(--muted); font-size: 14px; }
+.notice { background: var(--surface); border: 1px solid var(--danger); color: var(--text); border-radius: 12px; padding: 12px; font-size: 14px; }
+.list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.row { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; }
+.row__text { flex: 1; min-width: 0; display: grid; }
+.row__text strong, .row__text .muted { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.face { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; flex: none; }
+.face--blank { display: grid; place-items: center; background: var(--line); color: var(--text); font-weight: 700; }
+.btn--small { min-height: 40px; padding: 8px 12px; font-size: 14px; }
+.icon { background: none; border: 0; min-width: 40px; min-height: 40px; font-size: 20px; color: var(--muted); cursor: pointer; }
+.icon[aria-pressed='true'] { color: var(--accent); }

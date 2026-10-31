@@ -20,7 +20,7 @@ Stack: React + TypeScript + Vite, Supabase (publishable key only), Capacitor 6 f
 | # | Step | State |
 |---|------|-------|
 | 1 | App skeleton, sign-in with the shared account, Coming soon tabs | written, **not built or run yet** |
-| 2 | Contacts (find by username, favourites) | Coming soon |
+| 2 | Contacts (find by username, favourites) | written, needs `supabase/migrations/icell_0001_contacts.sql` run once; **not built or tested yet** |
 | 3 | iCell-to-iCell voice calls + TURN credentials service | Coming soon |
 | 4 | Call history | Coming soon |
 | 5 | Native incoming-call screen and ringtone (lock screen) | Coming soon |

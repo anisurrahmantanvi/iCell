@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import { ComingSoon } from './ComingSoon'
+import { Contacts } from './Contacts'
 
 type Tab = 'calls' | 'contacts' | 'history' | 'settings'
 
@@ -53,7 +54,7 @@ export function Home({ session }: { session: Session }) {
         {tab === 'calls' && (
           <ComingSoon title="Voice calls" note="iCell-to-iCell calling is the first feature to be switched on. Calling iConnecto users comes after that." />
         )}
-        {tab === 'contacts' && <ComingSoon title="Contacts" note="Find people by username and keep your favourites here." />}
+        {tab === 'contacts' && <Contacts />}
         {tab === 'history' && <ComingSoon title="Call history" note="Missed, received and dialled calls will be listed here." />}
         {tab === 'settings' && (
           <div className="settings">

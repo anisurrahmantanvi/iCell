@@ -21,5 +21,7 @@ export function errorMessage(err: unknown): string {
   if (l.includes('invalid login')) return 'Wrong email or password.'
   if (l.includes('email not confirmed')) return 'Please confirm your email first (check your inbox), then sign in.'
   if (l.includes('failed to fetch') || l.includes('network')) return 'Network problem. Check your connection and try again.'
+  if (l.includes('duplicate key')) return 'That already exists.'
+  if (l.includes('row-level security') || l.includes('permission denied')) return 'You do not have permission to do that.'
   return m || 'Something went wrong. Please try again.'
 }
